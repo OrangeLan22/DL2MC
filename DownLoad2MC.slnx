@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/McInstaller.App/McInstaller.App.csproj" />
+    <Project Path="src/McInstaller.Cli/McInstaller.Cli.csproj" />
+    <Project Path="src/McInstaller.Core/McInstaller.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/McInstaller.Core.Tests/McInstaller.Core.Tests.csproj" />
+  </Folder>
+</Solution>

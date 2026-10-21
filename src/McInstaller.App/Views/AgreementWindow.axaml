@@ -1,0 +1,60 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="McInstaller.App.Views.AgreementWindow"
+        Title="用户协议 — DL2MC"
+        Icon="/logo.png"
+        Width="760" Height="700"
+        MinWidth="620" MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        CanResize="True"
+        Background="{DynamicResource AppBackgroundBrush}"
+        FontFamily="Microsoft YaHei UI, Segoe UI, sans-serif">
+
+  <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="24,20,24,20">
+
+    <!-- 标题 -->
+    <StackPanel Grid.Row="0" Spacing="6">
+      <TextBlock Text="使用前请阅读并同意以下条款"
+                 FontSize="17" FontWeight="Bold"
+                 Foreground="{DynamicResource PrimaryTextBrush}"/>
+      <TextBlock Text="首次启动需完整阅读本条款并同意后继续"
+                 FontSize="12"
+                 Foreground="{DynamicResource SecondaryTextBrush}"/>
+    </StackPanel>
+
+    <Border Grid.Row="1" Margin="0,14,0,0"
+            Background="{DynamicResource PanelBackgroundBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="1" CornerRadius="6">
+      <ScrollViewer x:Name="ContentScroll">
+        <StackPanel x:Name="ContentHost" Spacing="9" Margin="18,14,18,18"/>
+      </ScrollViewer>
+    </Border>
+
+    <!-- 确认区 -->
+    <StackPanel Grid.Row="2" Spacing="8" Margin="0,14,0,0">
+      <TextBlock Text="在输入框输入「我已阅读并同意以上全部条款，且仅用于个人正版学习使用」以同意条款。"
+                 FontSize="12" TextWrapping="Wrap"
+                 Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+      <TextBox x:Name="ConfirmInput"
+               FontSize="12.5" Padding="10,7"
+               AcceptsReturn="False"/>
+
+      <!-- 输入正确但还没读完时给出提示 -->
+      <TextBlock x:Name="ReadFirstHint"
+                 Text="请先将协议内容滚动至最下方并完整阅读"
+                 FontSize="11" TextWrapping="Wrap"
+                 Foreground="{DynamicResource WarningBrush}"
+                 IsVisible="False"/>
+    </StackPanel>
+
+    <!-- 按钮 -->
+    <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="10"
+                HorizontalAlignment="Right" Margin="0,16,0,0">
+      <Button x:Name="DeclineButton" Content="不同意并退出" Padding="24,8"/>
+      <Button x:Name="AcceptButton" Content="同意并继续" Padding="24,8"
+              Classes="accent" IsEnabled="False"/>
+    </StackPanel>
+  </Grid>
+</Window>

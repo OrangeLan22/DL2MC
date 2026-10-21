@@ -1,0 +1,38 @@
+# ══════════ 构建产物 ══════════
+bin/
+obj/
+publish/
+publish-portable/
+publish-console/
+
+# ══════════ IDE / 工具 ══════════
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.swp
+.reasonix/
+
+# ══════════ 运行与测试产物 ══════════
+logs/
+*.log
+.test-mc/
+test-fixtures/
+
+# ══════════ 临时备份与草稿 ══════════
+.backup-before-comment-clean/
+*.broken
+*.bak
+*.tmp
+settings-block.txt
+
+# ══════════ 系统文件 ══════════
+Thumbs.db
+desktop.ini
+.DS_Store
+# ══════════ 不上传的内容 ══════════
+# 单元测试（本地保留，用于开发验证）
+tests/
+# 设计文档与协议原文（本地保留）
+docs/

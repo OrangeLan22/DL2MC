@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="McInstaller.App.Views.DocumentWindow"
+        Title="DL2MC — 文档"
+        Icon="/logo.png"
+        Width="720" Height="640"
+        MinWidth="560" MinHeight="440"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppBackgroundBrush}"
+        FontFamily="Microsoft YaHei UI, Segoe UI, sans-serif">
+
+  <Grid RowDefinitions="Auto,*,Auto" Margin="24,20,24,18">
+
+    <TextBlock Grid.Row="0" x:Name="TitleText"
+               FontSize="17" FontWeight="Bold"
+               Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+    <Border Grid.Row="1" Margin="0,14,0,0"
+            Background="{DynamicResource PanelBackgroundBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="1" CornerRadius="6">
+      <ScrollViewer x:Name="ContentScroll">
+        <StackPanel x:Name="ContentHost" Spacing="9" Margin="18,14,18,18"/>
+      </ScrollViewer>
+    </Border>
+
+    <Button Grid.Row="2" x:Name="CloseButton" Content="关闭"
+            Padding="24,8" HorizontalAlignment="Right" Margin="0,14,0,0"/>
+  </Grid>
+</Window>

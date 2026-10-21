@@ -1,0 +1,223 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="McInstaller.App.App"
+             RequestedThemeVariant="Default">
+
+  <Application.Styles>
+    <!-- 用 ColorPaletteResources 直接改写 Fluent 调色板的 Accent。
+         这是 Avalonia 11 官方支持的入口：主题内部所有 accent 色阶
+         （按钮、勾选框、焦点边框、进度条）都由它派生，且不读系统主题色。 -->
+    <FluentTheme>
+      <FluentTheme.Palettes>
+        <ColorPaletteResources x:Key="Light" Accent="#0078D4" />
+        <ColorPaletteResources x:Key="Dark"  Accent="#D9822B" />
+      </FluentTheme.Palettes>
+    </FluentTheme>
+
+    <!-- 进度条 / 状态文字上的流光，从左向右循环扫过 -->
+    <Style Selector="Border.shimmer">
+      <Style.Animations>
+        <Animation Duration="0:0:1.6" IterationCount="INFINITE">
+          <KeyFrame Cue="0%">
+            <Setter Property="TranslateTransform.X" Value="-120" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="TranslateTransform.X" Value="600" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <!-- 转圈加载指示器：Arc 绕中心旋转 -->
+    <Style Selector="Arc.spinner">
+      <Style.Animations>
+        <Animation Duration="0:0:0.9" IterationCount="INFINITE">
+          <KeyFrame Cue="0%">
+            <Setter Property="RotateTransform.Angle" Value="0" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="RotateTransform.Angle" Value="360" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <!-- ══════════ 顶部 tab 激活时的前景色 ══════════
+         图标与文字都绑定到 $parent[ToggleButton].Foreground。
+         亮色取白色，暗色取深色 —— 由 TabCheckedForeground 按主题提供 -->
+    <Style Selector="ToggleButton:checked">
+      <Setter Property="Foreground" Value="{DynamicResource TabCheckedForeground}" />
+    </Style>
+    <Style Selector="ToggleButton:checked:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource TabCheckedForeground}" />
+    </Style>
+    <Style Selector="ToggleButton:checked:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource TabCheckedForeground}" />
+    </Style>
+  </Application.Styles>
+
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+
+        <!-- ══════════ 亮色 ══════════ -->
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="AppBackgroundBrush"      Color="#FFFFFF" />
+          <SolidColorBrush x:Key="PanelBackgroundBrush"    Color="#F7F8FA" />
+          <SolidColorBrush x:Key="HeaderBackgroundBrush"   Color="#F0F2F5" />
+          <SolidColorBrush x:Key="SubtleBackgroundBrush"   Color="#EAEDF1" />
+          <SolidColorBrush x:Key="AppBorderBrush"          Color="#D8DCE2" />
+
+          <SolidColorBrush x:Key="PrimaryTextBrush"        Color="#1B1F24" />
+          <SolidColorBrush x:Key="SecondaryTextBrush"      Color="#5A6270" />
+          <SolidColorBrush x:Key="MutedTextBrush"          Color="#8A919C" />
+
+          <SolidColorBrush x:Key="SuccessBrush"            Color="#1B7F37" />
+          <SolidColorBrush x:Key="SuccessBackgroundBrush"  Color="#E6F4EA" />
+          <SolidColorBrush x:Key="WarningBrush"            Color="#A25203" />
+
+          <SolidColorBrush x:Key="LogBackgroundBrush"      Color="#F7F8FA" />
+          <SolidColorBrush x:Key="LogHeaderBrush"          Color="#EAEDF1" />
+          <SolidColorBrush x:Key="LogTextBrush"            Color="#3A4048" />
+
+          <SolidColorBrush x:Key="InstalledBadgeBrush"     Color="#1B7F37" />
+          <SolidColorBrush x:Key="InstalledBadgeTextBrush" Color="#FFFFFF" />
+
+          <!-- 顶部导航栏右侧：刷新 / 设置 两个圆形按钮的默认底色 -->
+          <SolidColorBrush x:Key="NavButtonBackground" Color="#E8EAEF" />
+          <SolidColorBrush x:Key="TabCheckedForeground" Color="#FFFFFF" />
+
+
+          <SolidColorBrush x:Key="TabBackgroundBrush"        Color="#E8EAEF" />
+          <SolidColorBrush x:Key="TabHoverBackgroundBrush"   Color="#F3F4F6" />
+          <SolidColorBrush x:Key="TabCheckedBackgroundBrush" Color="#0078D4" />
+
+          <!-- ═══ 列表项（ListBoxItem）════ -->
+          <!-- 未选 -->
+          <SolidColorBrush x:Key="ListBoxItemBackground"                      Color="#E6F2FB" />
+          <SolidColorBrush x:Key="ListBoxItemBackgroundPointerOver"           Color="#D8E9F7" />
+          <!-- 选中 -->
+          <SolidColorBrush x:Key="ListBoxItemBackgroundSelected"              Color="#E8EAEF" />
+          <SolidColorBrush x:Key="ListBoxItemBackgroundSelectedPointerOver"   Color="#E8EAEF" />
+          <SolidColorBrush x:Key="ListBoxItemBackgroundSelectedPressed"       Color="#E8EAEF" />
+          <!-- 设置里路径框 / 相邻按钮的底色 -->
+          <SolidColorBrush x:Key="FieldBackgroundBrush" Color="#E4E7EC" />
+          <!-- ═══ 顶部 tab（ToggleButton）══════ -->
+          <SolidColorBrush x:Key="ToggleButtonBackground"                     Color="#E8EAEF" />
+          <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver"          Color="#F3F4F6" />
+          <SolidColorBrush x:Key="ToggleButtonBackgroundPressed"              Color="#E8EAEF" />
+          <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled"             Color="#F7F8FA" />
+
+          <SolidColorBrush x:Key="ToggleButtonBorderBrush"                    Color="Transparent" />
+          <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver"         Color="#D8DCE2" />
+          <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed"             Color="#D8DCE2" />
+
+          <!-- 激活态：与设置里 ToggleSwitch 开启时同色（accent 主色 #0078D4） -->
+          <SolidColorBrush x:Key="ToggleButtonBackgroundChecked"              Color="#0078D4" />
+          <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver"   Color="#0078D4" />
+          <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed"       Color="#0078D4" />
+          <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled"      Color="#A9CCE9" />
+
+          <!-- 深色底上用白字 -->
+          <SolidColorBrush x:Key="ToggleButtonForegroundChecked"              Color="#FFFFFF" />
+          <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver"   Color="#FFFFFF" />
+          <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed"       Color="#FFFFFF" />
+
+          <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked"             Color="Transparent" />
+          <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver"  Color="Transparent" />
+          <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed"      Color="Transparent" />
+          <!-- accent 按钮配色：橙色，由 Button.accent 样式消费，不读系统主题色 -->
+          <SolidColorBrush x:Key="AccentBrush"                   Color="#D2691E" />
+          <SolidColorBrush x:Key="AccentHoverBrush"              Color="#BC5D1B" />
+          <SolidColorBrush x:Key="AccentPressedBrush"            Color="#A55118" />
+          <SolidColorBrush x:Key="AccentDisabledBrush"           Color="#E3C6AC" />
+          <SolidColorBrush x:Key="AccentForegroundBrush"         Color="#FFFFFF" />
+          <SolidColorBrush x:Key="AccentDisabledForegroundBrush" Color="#F3E6DA" />
+        </ResourceDictionary>
+
+        <!-- ══════════ 暗色 ══════════ -->
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="AppBackgroundBrush"      Color="#1A1B1E" />
+          <SolidColorBrush x:Key="PanelBackgroundBrush"    Color="#232428" />
+          <SolidColorBrush x:Key="HeaderBackgroundBrush"   Color="#202124" />
+          <SolidColorBrush x:Key="SubtleBackgroundBrush"   Color="#2C2E33" />
+          <SolidColorBrush x:Key="AppBorderBrush"          Color="#3A3D42" />
+
+          <SolidColorBrush x:Key="PrimaryTextBrush"        Color="#E8EAED" />
+          <SolidColorBrush x:Key="SecondaryTextBrush"      Color="#A8AEB8" />
+          <SolidColorBrush x:Key="MutedTextBrush"          Color="#787F8A" />
+
+          <SolidColorBrush x:Key="SuccessBrush"            Color="#5BD97F" />
+          <SolidColorBrush x:Key="SuccessBackgroundBrush"  Color="#1E3A2A" />
+          <SolidColorBrush x:Key="WarningBrush"            Color="#F0B354" />
+
+          <SolidColorBrush x:Key="LogBackgroundBrush"      Color="#121316" />
+          <SolidColorBrush x:Key="LogHeaderBrush"          Color="#1C1E22" />
+          <SolidColorBrush x:Key="LogTextBrush"            Color="#C9D1D9" />
+
+          <SolidColorBrush x:Key="InstalledBadgeBrush"     Color="#2E7D32" />
+          <SolidColorBrush x:Key="InstalledBadgeTextBrush" Color="#EAF7EC" />
+
+          <!-- 顶部导航栏右侧：刷新 / 设置 两个圆形按钮的默认底色 -->
+          <SolidColorBrush x:Key="NavButtonBackground" Color="#35383E" />
+          <!-- 顶部 tab 激活时的前景：暗色同样用白字 -->
+          <SolidColorBrush x:Key="TabCheckedForeground" Color="#FFFFFF" />
+
+
+          <SolidColorBrush x:Key="TabBackgroundBrush"        Color="#35383E" />
+          <SolidColorBrush x:Key="TabHoverBackgroundBrush"   Color="#2C2E33" />
+          <SolidColorBrush x:Key="TabCheckedBackgroundBrush" Color="#D9822B" />
+          <SolidColorBrush x:Key="FieldBackgroundBrush" Color="#31343A" />
+          <!-- ═══ 列表项（ListBoxItem）════ -->
+          <SolidColorBrush x:Key="ListBoxItemBackground"                      Color="#2A3642" />
+          <SolidColorBrush x:Key="ListBoxItemBackgroundPointerOver"           Color="#33424F" />
+          <SolidColorBrush x:Key="ListBoxItemBackgroundSelected"              Color="#35383E" />
+          <SolidColorBrush x:Key="ListBoxItemBackgroundSelectedPointerOver"   Color="#35383E" />
+          <SolidColorBrush x:Key="ListBoxItemBackgroundSelectedPressed"       Color="#35383E" />
+
+          <!-- ═══ 顶部 tab（ToggleButton）══════ -->
+          <SolidColorBrush x:Key="ToggleButtonBackground"                     Color="#35383E" />
+          <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver"          Color="#2C2E33" />
+          <SolidColorBrush x:Key="ToggleButtonBackgroundPressed"              Color="#35383E" />
+          <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled"             Color="#232428" />
+
+          <SolidColorBrush x:Key="ToggleButtonBorderBrush"                    Color="Transparent" />
+          <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver"         Color="#4A4E55" />
+          <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed"             Color="#4A4E55" />
+
+          <!-- 激活态：与设置里 ToggleSwitch 开启时同色（暗色 accent #D9822B） -->
+          <SolidColorBrush x:Key="ToggleButtonBackgroundChecked"              Color="#D9822B" />
+          <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver"   Color="#D9822B" />
+          <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed"       Color="#D9822B" />
+          <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled"      Color="#7A5222" />
+
+          <SolidColorBrush x:Key="ToggleButtonForegroundChecked"              Color="#0F1012" />
+          <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver"   Color="#0F1012" />
+          <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed"       Color="#0F1012" />
+
+          <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked"             Color="Transparent" />
+          <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver"  Color="Transparent" />
+          <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed"      Color="Transparent" />
+          <!-- accent 按钮配色：橙 + 深色文字 -->
+          <SolidColorBrush x:Key="AccentBrush"                   Color="#D9822B" />
+          <SolidColorBrush x:Key="AccentHoverBrush"              Color="#E8963F" />
+          <SolidColorBrush x:Key="AccentPressedBrush"            Color="#BE6E20" />
+          <SolidColorBrush x:Key="AccentDisabledBrush"           Color="#4A3826" />
+          <SolidColorBrush x:Key="AccentForegroundBrush"         Color="#0F1012" />
+          <SolidColorBrush x:Key="AccentDisabledForegroundBrush" Color="#8A7A66" />
+        </ResourceDictionary>
+
+      </ResourceDictionary.ThemeDictionaries>
+
+      <!-- ══════════ 顶部 tab 模板 ══════════ -->
+      <ControlTheme x:Key="TabToggleTheme" TargetType="ToggleButton">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+          <ControlTemplate>
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch" />
+          </ControlTemplate>
+        </Setter>
+      </ControlTheme>
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>

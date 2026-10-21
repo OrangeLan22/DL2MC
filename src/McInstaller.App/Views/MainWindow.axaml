@@ -1,0 +1,1097 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:McInstaller.App.ViewModels"
+        xmlns:views="using:McInstaller.App.Views"
+        mc:Ignorable="d" d:DesignWidth="1180" d:DesignHeight="780"
+        x:Class="McInstaller.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="DL2MC"
+        Icon="/logo.png"
+        Width="1180" Height="780"
+        MinWidth="980" MinHeight="640"
+        Background="{DynamicResource AppBackgroundBrush}"
+        FontFamily="Microsoft YaHei UI, Segoe UI, sans-serif">
+
+  <Panel>
+
+  <Grid x:Name="RootGrid">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*" MinHeight="220"/>
+      <RowDefinition Height="4"/>
+      <!-- 日志 -->
+      <RowDefinition Height="240" MinHeight="80" MaxHeight="600"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <!-- ══════════ 顶部工具栏 ══════════ -->
+    <Border Grid.Row="0"
+            Background="{DynamicResource HeaderBackgroundBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="0,0,0,1" Padding="16,10">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <!-- 已安装 -->
+          <ToggleButton MinWidth="112"
+                        HorizontalContentAlignment="Center"
+                        IsChecked="{Binding IsInstalledTab, Mode=OneWay}"
+                        Command="{Binding SwitchToInstalledCommand}"
+                        Click="OnTabToggleClick">
+            <!-- 内联模板 -->
+            <ToggleButton.Template>
+              <ControlTemplate>
+                <ContentPresenter Content="{TemplateBinding Content}"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center" />
+              </ControlTemplate>
+            </ToggleButton.Template>
+            <Border x:Name="InstalledTabBg" CornerRadius="6" Padding="14,7">
+              <StackPanel Orientation="Horizontal" Spacing="7">
+                <PathIcon Width="14" Height="14" VerticalAlignment="Center"
+                          Foreground="{Binding $parent[ToggleButton].Foreground}"
+                          Data="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z M12 2.36 3.5 7.2 12 12l8.5-4.8L12 2.36z"/>
+                <TextBlock Text="已安装" VerticalAlignment="Center"
+                           Foreground="{Binding $parent[ToggleButton].Foreground}"/>
+              </StackPanel>
+            </Border>
+          </ToggleButton>
+
+          <!-- 添加新版本 -->
+          <ToggleButton MinWidth="124"
+                        HorizontalContentAlignment="Center"
+                        IsChecked="{Binding IsAddTab, Mode=OneWay}"
+                        Command="{Binding SwitchToAddCommand}"
+                        Click="OnTabToggleClick">
+            <ToggleButton.Template>
+              <ControlTemplate>
+                <ContentPresenter Content="{TemplateBinding Content}"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center" />
+              </ControlTemplate>
+            </ToggleButton.Template>
+            <Border x:Name="AddTabBg" CornerRadius="6" Padding="14,7">
+              <StackPanel Orientation="Horizontal" Spacing="7">
+                <PathIcon Width="14" Height="14" VerticalAlignment="Center"
+                          Foreground="{Binding $parent[ToggleButton].Foreground}"
+                          Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                <TextBlock Text="添加新版本" VerticalAlignment="Center"
+                           Foreground="{Binding $parent[ToggleButton].Foreground}"/>
+              </StackPanel>
+            </Border>
+          </ToggleButton>
+
+        </StackPanel>
+
+        <!-- 右侧刷新 + 设置 -->
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+          <Border Width="34" Height="34" CornerRadius="17"
+                  Background="{DynamicResource NavButtonBackground}">
+            <Button Background="Transparent" BorderThickness="0" Padding="0" CornerRadius="17"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Command="{Binding RefreshCurrentCommand}"
+                    IsEnabled="{Binding CanApplyChanges}"
+                    ToolTip.Tip="{Binding RefreshTooltip}">
+              <PathIcon Width="16" Height="16"
+                        Foreground="{Binding $parent[Button].Foreground}"
+                        Data="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+            </Button>
+          </Border>
+          <Border Width="34" Height="34" CornerRadius="17"
+                  Background="{DynamicResource NavButtonBackground}">
+            <Button Background="Transparent" BorderThickness="0" Padding="0" CornerRadius="17"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Command="{Binding OpenSettingsCommand}"
+                    ToolTip.Tip="设置">
+              <PathIcon Width="16" Height="16"
+                        Foreground="{Binding $parent[Button].Foreground}"
+                        Data="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/>
+            </Button>
+          </Border>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- ══════════ 中部 ══════════ -->
+    <Grid Grid.Row="1" x:Name="MainGrid">
+      <Grid.ColumnDefinitions>
+        <!-- 左列表 -->
+        <ColumnDefinition Width="340" MinWidth="260" MaxWidth="700"/>
+        <ColumnDefinition Width="4"/>
+        <!-- 右侧详情保底 420 -->
+        <ColumnDefinition Width="*" MinWidth="420"/>
+      </Grid.ColumnDefinitions>
+
+      <!-- ── 左：列表 ── -->
+      <Border Grid.Column="0"
+              BorderBrush="{DynamicResource AppBorderBrush}"
+              BorderThickness="0,0,1,0">
+        <Grid>
+
+          <!-- 列表区：两个列表按板块切换 -->
+          <Grid Grid.Row="0">
+
+            <!-- ═══ 已安装 ═══ -->
+            <Grid IsVisible="{Binding IsInstalledTab}" RowDefinitions="Auto,*">
+              <Border Grid.Row="0" Padding="14,8"
+                      BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,0,0,1">
+                <TextBlock FontSize="12"
+                           Foreground="{DynamicResource SecondaryTextBrush}">
+                  <Run Text="{Binding InstalledVersions.Count}"/>
+                  <Run Text=" 个已安装的版本"/>
+                </TextBlock>
+              </Border>
+
+              <ListBox Grid.Row="1" ItemsSource="{Binding InstalledVersions}"
+                       SelectedItem="{Binding SelectedInstalled}"
+                       Background="Transparent" BorderThickness="0">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:InstalledVersionViewModel">
+                    <StackPanel Spacing="2" Margin="0,3">
+                      <TextBlock Text="{Binding Id}" FontWeight="SemiBold" FontSize="13"
+                                 TextTrimming="CharacterEllipsis"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"/>
+                      <TextBlock Text="{Binding LoaderDisplay}" FontSize="11"
+                                 Foreground="{DynamicResource SecondaryTextBrush}"/>
+                    </StackPanel>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </Grid>
+
+            <!-- ═══ 添加新版本 ═══ -->
+            <Grid IsVisible="{Binding IsAddTab}" RowDefinitions="Auto,Auto,*">
+              <Border Grid.Row="0" Padding="14,8"
+                      BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,0,0,1">
+                <StackPanel Spacing="7">
+                  <TextBlock FontSize="12"
+                             Foreground="{DynamicResource SecondaryTextBrush}">
+                    <Run Text="{Binding Versions.Count}"/>
+                    <Run Text=" 个筛选结果"/>
+                  </TextBlock>
+                  <StackPanel Orientation="Horizontal" Spacing="13">
+                    <CheckBox Content="正式版" FontSize="11" IsChecked="{Binding ShowReleases}"/>
+                    <CheckBox Content="快照" FontSize="11" IsChecked="{Binding ShowSnapshots}"/>
+                    <CheckBox Content="远古" FontSize="11" IsChecked="{Binding ShowOldVersions}"/>
+                  </StackPanel>
+                </StackPanel>
+              </Border>
+
+
+              <!-- 版本搜索 -->
+              <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="10,8,10,4">
+                <TextBox Text="{Binding VersionSearchText}"
+                         Watermark="根据版本号搜索"
+                         FontSize="12" Padding="8,5"/>
+                <TextBlock Grid.Column="1" Text="{Binding VersionFilterHint}"
+                           FontSize="11" VerticalAlignment="Center" Margin="10,0,0,0"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           IsVisible="{Binding VersionFilterHint,
+                                       Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+              </Grid>
+              <ListBox Grid.Row="2" ItemsSource="{Binding Versions}"
+                       SelectedItem="{Binding SelectedVersion}"
+                       Background="Transparent" BorderThickness="0">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:VersionItemViewModel">
+                    <StackPanel Spacing="2" Margin="0,3">
+                      <TextBlock Text="{Binding Id}" FontWeight="SemiBold" FontSize="13"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"/>
+                      <TextBlock Text="{Binding ReleaseTimeDisplay}" FontSize="11"
+                                 Foreground="{DynamicResource MutedTextBrush}"/>
+                    </StackPanel>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Border>
+
+      <!-- ── 列表 / 详情 之间的宽度分隔条 ── -->
+      <GridSplitter x:Name="ColumnSplitter" Grid.Column="1" Width="4"
+                    ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
+                    Background="{DynamicResource AppBorderBrush}"/>
+
+      <!-- ── 右：操作面板 ── -->
+      <ScrollViewer Grid.Column="2">
+        <Panel Margin="20,16,20,16">
+
+          <!-- ═══ 面板 A：管理已安装版本 ═══ -->
+          <StackPanel Spacing="14" IsVisible="{Binding ShowInstalledPanel}">
+
+            <Border Background="{DynamicResource PanelBackgroundBrush}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1" CornerRadius="6" Padding="16">
+              <StackPanel Spacing="12">
+                <TextBlock Text="已安装版本" FontWeight="Bold" FontSize="14"
+                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                <Grid ColumnDefinitions="90,*">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                  </Grid.RowDefinitions>
+
+                  <TextBlock Grid.Row="0" Grid.Column="0" Text="名称" Margin="0,0,0,8"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                  <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedInstalled.Id}"
+                             FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                  <TextBlock Grid.Row="1" Grid.Column="0" Text="加载器" Margin="0,0,0,8"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                  <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedInstalled.LoaderDisplay}"
+                             Margin="0,0,0,8" Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                  <TextBlock Grid.Row="2" Grid.Column="0" Text="父版本" Margin="0,0,0,8"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                  <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedInstalled.ParentDisplay}"
+                             Margin="0,0,0,8" Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                  <TextBlock Grid.Row="3" Grid.Column="0" Text="类型" Margin="0,0,0,8"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                  <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedInstalled.TypeDisplay}"
+                             Margin="0,0,0,8" Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                  <TextBlock Grid.Row="4" Grid.Column="0" Text="客户端"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                  <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedInstalled.SizeDisplay}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+                </Grid>
+              </StackPanel>
+            </Border>
+            <!-- 重命名 / 删除 -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+
+              <!-- 重命名 -->
+              <Border Grid.Column="0"
+                      Background="{DynamicResource PanelBackgroundBrush}"
+                      BorderBrush="{DynamicResource AppBorderBrush}"
+                      BorderThickness="1" CornerRadius="6" Padding="16"
+                      VerticalAlignment="Stretch">
+                <StackPanel Spacing="10">
+                  <TextBlock Text="重命名" FontWeight="Bold" FontSize="14"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+                  <TextBlock Text="只改目录名与 JSON 内的 id，不动版本文件"
+                             FontSize="11" TextWrapping="Wrap"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+                  <Button Content="修改版本名称" Padding="20,7" HorizontalAlignment="Left"
+                          Command="{Binding BeginRenameCommand}"
+                          IsVisible="{Binding !IsRenameMode}"/>
+
+                  <StackPanel Spacing="8" IsVisible="{Binding IsRenameMode}">
+                    <TextBox Text="{Binding RenameInput}" Watermark="输入新的版本名称"/>
+
+                    <TextBlock Text="{Binding RenameError}" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{DynamicResource WarningBrush}"
+                               IsVisible="{Binding RenameError,
+                                           Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Button Content="确定" Padding="18,6" Classes="accent"
+                              Command="{Binding ConfirmRenameCommand}"/>
+                      <Button Content="取消" Padding="18,6"
+                              Command="{Binding CancelRenameCommand}"/>
+                    </StackPanel>
+                  </StackPanel>
+                </StackPanel>
+              </Border>
+
+              <!-- 删除 -->
+              <Border Grid.Column="1"
+                      Background="{DynamicResource PanelBackgroundBrush}"
+                      BorderBrush="{DynamicResource AppBorderBrush}"
+                      BorderThickness="1" CornerRadius="6" Padding="16"
+                      VerticalAlignment="Stretch">
+                <StackPanel Spacing="10">
+                  <TextBlock Text="删除版本" FontWeight="Bold" FontSize="14"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+                  <TextBlock Text="连同 mods / config / saves 一起移除，不可恢复"
+                             FontSize="11" TextWrapping="Wrap"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+                  <Button Content="删除此版本" Padding="20,7" HorizontalAlignment="Left"
+                          Command="{Binding DeleteInstalledCommand}"
+                          IsEnabled="{Binding !IsBusy}"/>
+                </StackPanel>
+              </Border>
+            </Grid>
+
+            <!-- 加载器 -->
+            <Border Background="{DynamicResource PanelBackgroundBrush}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1" CornerRadius="6" Padding="16">
+              <StackPanel Spacing="8">
+                <TextBlock Text="加载器" FontWeight="Bold" FontSize="14"
+                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <TextBlock Text="勾选即表示要把该版本改为该加载器；已装加载器时可直接切换类型或版本"
+                           FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+                <Panel>
+                  <ItemsControl ItemsSource="{Binding Loaders}"
+                                IsEnabled="{Binding !IsLoadingLoaders}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:LoaderOptionViewModel">
+                      <Border Padding="0,9" BorderThickness="0,0,0,1"
+                              BorderBrush="{DynamicResource AppBorderBrush}">
+                        <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+
+                          <!-- 第一行：勾选框 + 名称 + 版本下拉（右） -->
+                          <CheckBox Grid.Row="0" Grid.Column="0"
+                                    IsChecked="{Binding IsSelected}"
+                                    IsEnabled="{Binding IsSelectable}"
+                                    VerticalAlignment="Center"/>
+
+                          <TextBlock Grid.Row="0" Grid.Column="1"
+                                     Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="13"
+                                     VerticalAlignment="Center" Margin="9,0,10,0"
+                                     Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                          <ComboBox Grid.Row="0" Grid.Column="2"
+                                    HorizontalAlignment="Right" MinWidth="220"
+                                    VerticalAlignment="Center"
+                                    ItemsSource="{Binding Versions}"
+                                    SelectedItem="{Binding SelectedVersion}"
+                                    IsEnabled="{Binding IsSelected}">
+                            <ComboBox.ItemTemplate>
+                              <DataTemplate x:DataType="vm:LoaderVersionOption">
+                                <TextBlock Text="{Binding Display}"/>
+                              </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                          </ComboBox>
+
+                          <!-- 第二行：状态提示，与名称左对齐 -->
+                          <TextBlock Grid.Row="1" Grid.Column="1" Margin="9,3,10,0"
+                                     Text="{Binding NoteText}" FontSize="11"
+                                     TextWrapping="Wrap"
+                                     Foreground="{DynamicResource WarningBrush}"
+                                     IsVisible="{Binding NoteText,
+                                                 Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- 加载遮罩：只覆盖加载器版本选择区 -->
+                <Border Background="{DynamicResource PanelBackgroundBrush}" Opacity="0.92"
+                        IsVisible="{Binding IsLoadingLoaders}">
+                  <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
+                    <Arc Classes="spinner" Width="30" Height="30"
+                         StartAngle="0" SweepAngle="280"
+                         Stroke="{DynamicResource PrimaryTextBrush}" StrokeThickness="3"
+                         RenderTransformOrigin="50%,50%">
+                      <Arc.RenderTransform>
+                        <RotateTransform/>
+                      </Arc.RenderTransform>
+                    </Arc>
+                    <TextBlock Text="{Binding LoaderLoadingText}" FontSize="11"
+                               HorizontalAlignment="Center"
+                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                    <TextBlock Text="{Binding LoadingSlowHint}" FontSize="11"
+                                HorizontalAlignment="Center" TextAlignment="Center"
+                                TextWrapping="Wrap" MaxWidth="300"
+                                Foreground="{DynamicResource WarningBrush}"
+                                IsVisible="{Binding LoadingSlowHint,
+                                            Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                  </StackPanel>
+                </Border>
+                </Panel>
+
+                <Button Content="应用更新" Padding="22,8" HorizontalAlignment="Left"
+                        Classes="accent" Margin="0,6,0,0"
+                        Command="{Binding ApplyInstalledChangesCommand}"
+                        IsEnabled="{Binding CanApplyChanges}"/>
+              </StackPanel>
+            </Border>
+
+          </StackPanel>
+
+          <!-- ═══ 面板 B：新增版本 ═══ -->
+          <StackPanel Spacing="14" IsVisible="{Binding ShowAddPanel}">
+
+            <Border Background="{DynamicResource PanelBackgroundBrush}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1" CornerRadius="6" Padding="16">
+              <StackPanel Spacing="12">
+                <TextBlock Text="版本详情" FontWeight="Bold" FontSize="14"
+                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                <Grid ColumnDefinitions="90,*">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                  </Grid.RowDefinitions>
+
+                  <TextBlock Grid.Row="0" Grid.Column="0" Text="版本" Margin="0,0,0,8"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                  <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DetailVersionId}"
+                             FontWeight="SemiBold" Margin="0,0,0,8"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                  <TextBlock Grid.Row="1" Grid.Column="0" Text="类型" Margin="0,0,0,8"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                  <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding DetailType}" Margin="0,0,0,8"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                  <TextBlock Grid.Row="2" Grid.Column="0" Text="发布时间" Margin="0,0,0,8"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                  <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding DetailReleaseTime}" Margin="0,0,0,8"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                  <TextBlock Grid.Row="3" Grid.Column="0" Text="需要 Java" Margin="0,0,0,8"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                  <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding DetailJava}" Margin="0,0,0,8"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                  <TextBlock Grid.Row="4" Grid.Column="0" Text="下载体积"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                  <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding DetailSize}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <!-- 版本名称 -->
+            <Border Background="{DynamicResource PanelBackgroundBrush}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1" CornerRadius="6" Padding="16">
+              <StackPanel Spacing="8">
+                <TextBlock Text="版本名称" FontWeight="Bold" FontSize="14"
+                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <TextBlock Text="安装后将以这个名称出现在启动器的版本列表中，不能与已有版本重名"
+                           FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                <TextBox Text="{Binding NewVersionName}" Watermark="输入版本名称"/>
+                <TextBlock Text="{Binding NewVersionNameError}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource WarningBrush}"
+                           IsVisible="{Binding NewVersionNameError,
+                                       Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+              </StackPanel>
+            </Border>
+
+            <!-- 模组加载器 -->
+            <Border Background="{DynamicResource PanelBackgroundBrush}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1" CornerRadius="6" Padding="16">
+              <StackPanel Spacing="8">
+                <TextBlock Text="模组加载器（可多选）" FontWeight="Bold" FontSize="14"
+                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                <Panel>
+                  <ItemsControl ItemsSource="{Binding Loaders}"
+                                IsEnabled="{Binding !IsLoadingLoaders}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:LoaderOptionViewModel">
+                      <Border Padding="0,9" BorderThickness="0,0,0,1"
+                              BorderBrush="{DynamicResource AppBorderBrush}">
+                        <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+
+                          <!-- 第一行：勾选框 + 名称 + 版本下拉（右） -->
+                          <CheckBox Grid.Row="0" Grid.Column="0"
+                                    IsChecked="{Binding IsSelected}"
+                                    IsEnabled="{Binding IsSelectable}"
+                                    VerticalAlignment="Center"/>
+
+                          <TextBlock Grid.Row="0" Grid.Column="1"
+                                     Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="13"
+                                     VerticalAlignment="Center" Margin="9,0,10,0"
+                                     Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                          <ComboBox Grid.Row="0" Grid.Column="2"
+                                    HorizontalAlignment="Right" MinWidth="220"
+                                    VerticalAlignment="Center"
+                                    ItemsSource="{Binding Versions}"
+                                    SelectedItem="{Binding SelectedVersion}"
+                                    IsEnabled="{Binding IsSelected}">
+                            <ComboBox.ItemTemplate>
+                              <DataTemplate x:DataType="vm:LoaderVersionOption">
+                                <TextBlock Text="{Binding Display}"/>
+                              </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                          </ComboBox>
+
+                          <!-- 第二行：状态提示，与名称左对齐 -->
+                          <TextBlock Grid.Row="1" Grid.Column="1" Margin="9,3,10,0"
+                                     Text="{Binding NoteText}" FontSize="11"
+                                     TextWrapping="Wrap"
+                                     Foreground="{DynamicResource WarningBrush}"
+                                     IsVisible="{Binding NoteText,
+                                                 Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- 加载遮罩：只覆盖加载器版本选择区 -->
+                <Border Background="{DynamicResource PanelBackgroundBrush}" Opacity="0.92"
+                        IsVisible="{Binding IsLoadingLoaders}">
+                  <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
+                    <Arc Classes="spinner" Width="30" Height="30"
+                         StartAngle="0" SweepAngle="280"
+                         Stroke="{DynamicResource PrimaryTextBrush}" StrokeThickness="3"
+                         RenderTransformOrigin="50%,50%">
+                      <Arc.RenderTransform>
+                        <RotateTransform/>
+                      </Arc.RenderTransform>
+                    </Arc>
+                    <TextBlock Text="{Binding LoaderLoadingText}" FontSize="11"
+                               HorizontalAlignment="Center"
+                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                    <TextBlock Text="{Binding LoadingSlowHint}" FontSize="11"
+                                HorizontalAlignment="Center" TextAlignment="Center"
+                                TextWrapping="Wrap" MaxWidth="300"
+                                Foreground="{DynamicResource WarningBrush}"
+                                IsVisible="{Binding LoadingSlowHint,
+                                            Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                  </StackPanel>
+                </Border>
+                </Panel>
+              </StackPanel>
+            </Border>
+
+            <!-- 进度 -->
+            <Border Background="{DynamicResource PanelBackgroundBrush}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1" CornerRadius="6" Padding="16"
+                    IsVisible="{Binding IsBusy}">
+              <StackPanel Spacing="9">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="{Binding StatusText}" FontWeight="SemiBold" FontSize="13"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+                  <TextBlock Grid.Column="1" Text="{Binding ProgressText}" FontSize="12"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                </Grid>
+
+
+                <TextBlock Text="{Binding CurrentFileText}" FontSize="11"
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="{DynamicResource MutedTextBrush}"
+                           IsVisible="{Binding CurrentFileText,
+                                       Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+              </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,4,0,0">
+              <Button Content="取消" Padding="24,8" Command="{Binding CancelCommand}"
+                      IsVisible="{Binding IsBusy}"/>
+              <Button Content="开始安装" Padding="28,9" FontWeight="SemiBold"
+                      Classes="accent"
+                      Command="{Binding InstallCommand}" IsEnabled="{Binding CanApplyChanges}"/>
+            </StackPanel>
+          </StackPanel>
+
+          <!-- 板块内未选中具体项时的提示 -->
+          <TextBlock Text="{Binding PlaceholderText}"
+                     FontSize="13" TextWrapping="Wrap" TextAlignment="Center"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" Margin="40"
+                     IsVisible="{Binding ShowPlaceholder}"
+                     Foreground="{DynamicResource MutedTextBrush}"/>
+        </Panel>
+      </ScrollViewer>
+    </Grid>
+
+    <!-- ══════════ 列表 / 日志 之间的高度分隔条 ══════════ -->
+    <GridSplitter x:Name="RowSplitter" Grid.Row="2" Height="4"
+                  ResizeDirection="Rows" ResizeBehavior="PreviousAndNext"
+                  Background="{DynamicResource AppBorderBrush}"
+                  IsVisible="{Binding ShowLogPanel}"/>
+
+    <!-- ══════════ 底部：日志（可在设置里关闭） ══════════ -->
+    <Border Grid.Row="3"
+            IsVisible="{Binding ShowLogPanel}"
+            Background="{DynamicResource LogBackgroundBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="0,1,0,0">
+      <Grid RowDefinitions="Auto,*">
+        <Border Grid.Row="0" Background="{DynamicResource LogHeaderBrush}" Padding="12,7">
+          <TextBlock Text="运行日志" FontSize="12" FontWeight="SemiBold"
+                     Foreground="{DynamicResource LogTextBrush}" Opacity="0.85"/>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" x:Name="LogScroll">
+          <!-- 整段日志用单个 SelectableTextBlock，支持跨行多选复制 -->
+          <SelectableTextBlock Text="{Binding LogText}" Margin="12,8,12,8"
+                               FontSize="11.5" TextWrapping="Wrap"
+                               FontFamily="Consolas, Cascadia Mono, monospace"
+                               Foreground="{DynamicResource LogTextBrush}"/>
+        </ScrollViewer>
+      </Grid>
+    </Border>
+
+    <!-- ══════════ 底部状态栏 ══════════ -->
+    <Border Grid.Row="4"
+            Background="{DynamicResource HeaderBackgroundBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="0,1,0,0" Padding="16,6">
+      <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto">
+
+        <!-- 目录：只显示内容，过长省略 -->
+        <TextBlock Grid.Column="0" Text="{Binding FooterDirectory}" FontSize="11"
+                   VerticalAlignment="Center"
+                   TextTrimming="CharacterEllipsis"
+                   ToolTip.Tip="{Binding FooterDirectory}"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+        <TextBlock Grid.Column="1" Text="{Binding ThemeDisplay}" FontSize="11"
+                   VerticalAlignment="Center" Margin="24,0,0,0"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+        <!-- 分隔符 -->
+        <TextBlock Grid.Column="2" Text="│" FontSize="11"
+                   VerticalAlignment="Center" Margin="14,0"
+                   Foreground="{DynamicResource AppBorderBrush}"/>
+
+        <TextBlock Grid.Column="3" Text="{Binding SourceDisplay}" FontSize="11"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+        <TextBlock Grid.Column="4" Text="│" FontSize="11"
+                   VerticalAlignment="Center" Margin="14,0"
+                   Foreground="{DynamicResource AppBorderBrush}"/>
+
+        <!-- 操作结果状态 -->
+        <Panel Grid.Column="5" Background="Transparent" Cursor="Hand"
+               VerticalAlignment="Center"
+               PointerPressed="OnStatusTextPointerPressed"
+               ToolTip.Tip="点击查看下载进度">
+          <TextBlock Text="{Binding StatusText}" FontSize="11"
+                     FontWeight="SemiBold"
+                     Foreground="{DynamicResource SuccessBrush}"/>
+
+          <!-- 最小化期间的流光 -->
+          <Border ClipToBounds="True" HorizontalAlignment="Left" Height="14"
+                  IsHitTestVisible="False"
+                  IsVisible="{Binding IsOverlayMinimized}">
+            <Border Classes="shimmer" Width="90" Height="14"
+                    IsHitTestVisible="False" HorizontalAlignment="Left">
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                  <GradientStop Offset="0" Color="#00FFFFFF"/>
+                  <GradientStop Offset="0.5" Color="#88FFFFFF"/>
+                  <GradientStop Offset="1" Color="#00FFFFFF"/>
+                </LinearGradientBrush>
+              </Border.Background>
+              <Border.RenderTransform>
+                <TranslateTransform/>
+              </Border.RenderTransform>
+            </Border>
+          </Border>
+        </Panel>
+      </Grid>
+    </Border>
+  </Grid>
+
+
+  <!-- ══════════ 设置弹窗 ══════════ -->
+  <Border Background="#99000000" IsVisible="{Binding ShowSettings}">
+    <Border Background="{DynamicResource PanelBackgroundBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="1" CornerRadius="8"
+            Padding="24,24,4,24" Width="600" MaxHeight="660"
+            HorizontalAlignment="Center" VerticalAlignment="Center">
+      <Grid RowDefinitions="Auto,*">
+
+        <!-- 标题栏 + 右上角关闭 -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,20,0">
+          <TextBlock Text="设置" FontSize="18" FontWeight="Bold"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+          <Button Grid.Column="1" Width="32" Height="32" Padding="0"
+                  CornerRadius="16" Background="Transparent" BorderThickness="0"
+                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                  Command="{Binding CloseSettingsCommand}"
+                  ToolTip.Tip="关闭">
+            <PathIcon Width="12" Height="12"
+                      Foreground="{Binding $parent[Button].Foreground}"
+                      Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </Button>
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" Margin="0,14,0,0">
+          <StackPanel Spacing="20" Margin="0,0,20,0">
+
+            <!-- 启动器目录 -->
+            <StackPanel Spacing="9">
+              <TextBlock Text="启动器目录" FontWeight="SemiBold" FontSize="13"
+                         Foreground="{DynamicResource PrimaryTextBrush}"/>
+              <TextBlock Text="需选择启动器的 .minecraft 文件夹"
+                         FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+              <Grid ColumnDefinitions="*,Auto,Auto">
+                <Panel>
+                  <Border Background="{DynamicResource FieldBackgroundBrush}" CornerRadius="4">
+                    <Button x:Name="DirSelectorButton"
+                            Background="Transparent" BorderThickness="0"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Padding="10,7"
+                            Click="OnToggleDirectoryPopup"
+                            ToolTip.Tip="点击展开历史目录">
+                      <TextBlock Text="{Binding MinecraftDirectory}"
+                                 TextTrimming="CharacterEllipsis" FontSize="12"
+                                 VerticalAlignment="Center"/>
+                    </Button>
+                  </Border>
+
+                  <Popup x:Name="DirPopup"
+                         PlacementTarget="{Binding #DirSelectorButton}"
+                         Placement="Bottom"
+                         HorizontalOffset="0" VerticalOffset="2"
+                         IsOpen="{Binding IsDirectoryPopupOpen, Mode=TwoWay}"
+                         IsLightDismissEnabled="True">
+                    <Border Background="{DynamicResource PanelBackgroundBrush}"
+                            BorderBrush="{DynamicResource AppBorderBrush}"
+                            BorderThickness="1" CornerRadius="4"
+                            MinWidth="440" MaxHeight="260" Padding="4">
+                      <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding KnownDirectories}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                              <Grid ColumnDefinitions="*,Auto" Margin="0,1">
+                                <Button Content="{Binding}"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Left"
+                                        Background="Transparent"
+                                        Padding="8,6" FontSize="12"
+                                        Click="OnHistoryClick"/>
+                                <Button Grid.Column="1" Content="×"
+                                        Padding="9,4" Margin="6,0,0,0" FontSize="12"
+                                        Background="Transparent"
+                                        ToolTip.Tip="从历史目录中移除"
+                                        Click="OnHistoryRemoveClick"/>
+                              </Grid>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </ScrollViewer>
+                    </Border>
+                  </Popup>
+                </Panel>
+                <Border Grid.Column="1" Background="{DynamicResource FieldBackgroundBrush}"
+                        CornerRadius="4" Margin="8,0,0,0">
+                  <Button Content="选择" Background="Transparent" BorderThickness="0"
+                          Padding="14,6" Click="OnBrowseClick"/>
+                </Border>
+                <Border Grid.Column="2" Background="{DynamicResource FieldBackgroundBrush}"
+                        CornerRadius="4" Margin="6,0,0,0">
+                  <Button Content="打开" Background="Transparent" BorderThickness="0"
+                          Padding="12,6" Command="{Binding OpenDirectoryCommand}"/>
+                </Border>
+              </Grid>
+            </StackPanel>
+
+            <Border Height="1" Background="{DynamicResource AppBorderBrush}" Margin="0,2"/>
+
+            <!-- 更新 -->
+            <StackPanel Spacing="12">
+              <TextBlock Text="更新" FontWeight="SemiBold" FontSize="13"
+                         Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+              <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                <Button Content="检查更新" Padding="18,7"
+                        Command="{Binding CheckUpdatesCommand}"/>
+
+                <TextBlock Grid.Column="1" Text="{Binding AppVersion}"
+                           FontSize="12" VerticalAlignment="Center" Margin="12,0,0,0"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8"
+                            VerticalAlignment="Center">
+                  <TextBlock Text="启动时自动检查" FontSize="12"
+                             VerticalAlignment="Center"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                  <ToggleSwitch IsChecked="{Binding CheckUpdateOnStartup}"
+                                OnContent="" OffContent="" VerticalAlignment="Center"/>
+                </StackPanel>
+              </Grid>
+
+              <!-- 发现新版本时显示，点击打开下载页 -->
+              <Button Content="{Binding UpdateNotice}"
+                      Padding="0" Background="Transparent" BorderThickness="0"
+                      HorizontalAlignment="Left" Cursor="Hand" FontSize="12"
+                      Foreground="{DynamicResource WarningBrush}"
+                      Command="{Binding OpenUpdatePageCommand}"
+                      IsVisible="{Binding UpdateNotice,
+                                  Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+            </StackPanel>
+
+            <Border Height="1" Background="{DynamicResource AppBorderBrush}" Margin="0,2"/>
+
+            <!-- 下载源 -->
+            <StackPanel Spacing="14">
+              <TextBlock Text="下载源" FontWeight="SemiBold" FontSize="13"
+                         Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="3">
+                  <TextBlock Text="镜像加速" FontSize="12.5"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+                  <TextBlock Text="启用 BMCLAPI 镜像作为备用下载源"
+                             FontSize="11" TextWrapping="Wrap"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                </StackPanel>
+                <ToggleSwitch Grid.Column="1" IsChecked="{Binding MirrorEnabled}"
+                              OnContent="" OffContent="" VerticalAlignment="Center"/>
+              </Grid>
+
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="3">
+                  <TextBlock Text="慢速自动切换" FontSize="12.5"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+                  <TextBlock Text="官方源速度低于阈值时自动改用镜像"
+                             FontSize="11" TextWrapping="Wrap"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                </StackPanel>
+                <ToggleSwitch Grid.Column="1" IsChecked="{Binding AutoSwitchMirror}"
+                              OnContent="" OffContent="" VerticalAlignment="Center"/>
+              </Grid>
+
+              <Grid ColumnDefinitions="Auto,Auto,Auto" IsEnabled="{Binding CanEditThreshold}">
+                <TextBlock Text="慢速阈值" VerticalAlignment="Center" FontSize="12"
+                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                <TextBox Grid.Column="1" Text="{Binding SlowThresholdText}"
+                         Width="100" Margin="10,0"/>
+                <TextBlock Grid.Column="2" Text="KB/s" VerticalAlignment="Center" FontSize="12"
+                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+              </Grid>
+
+              <TextBlock Text="镜像作用于：原版资源、NeoForge。Fabric 与 Forge 无可用镜像；OptiFine 仅通过镜像提供。"
+                         FontSize="11" TextWrapping="Wrap" LineHeight="17"
+                         Foreground="{DynamicResource MutedTextBrush}"/>
+            </StackPanel>
+
+            <Border Height="1" Background="{DynamicResource AppBorderBrush}" Margin="0,2"/>
+
+            <!-- 下载性能 -->
+            <StackPanel Spacing="12">
+              <TextBlock Text="下载性能" FontWeight="SemiBold" FontSize="13"
+                         Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="3">
+                  <TextBlock Text="并发连接数" FontSize="12.5"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+                  <TextBlock Text="同时下载的文件数，过大可能被 CDN 限流"
+                             FontSize="11" TextWrapping="Wrap"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                </StackPanel>
+                <TextBox Grid.Column="1" Text="{Binding ConcurrencyText}"
+                         Width="80" VerticalAlignment="Center"/>
+              </Grid>
+
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="3">
+                  <TextBlock Text="最大重试次数" FontSize="12.5"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+                  <TextBlock Text="单个文件失败后的重试上限"
+                             FontSize="11" TextWrapping="Wrap"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                </StackPanel>
+                <TextBox Grid.Column="1" Text="{Binding MaxRetriesText}"
+                         Width="80" VerticalAlignment="Center"/>
+              </Grid>
+            </StackPanel>
+
+            <Border Height="1" Background="{DynamicResource AppBorderBrush}" Margin="0,2"/>
+
+            <!-- 主题 -->
+            <StackPanel Spacing="12">
+              <TextBlock Text="界面主题" FontWeight="SemiBold" FontSize="13"
+                         Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="主题色" FontSize="12.5" VerticalAlignment="Center"
+                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14"
+                            VerticalAlignment="Center">
+                  <RadioButton Content="跟随系统" FontSize="12" GroupName="Theme"
+                               IsChecked="{Binding IsThemeSystem}"/>
+                  <RadioButton Content="亮色" FontSize="12" GroupName="Theme"
+                               IsChecked="{Binding IsThemeLight}"/>
+                  <RadioButton Content="暗色" FontSize="12" GroupName="Theme"
+                               IsChecked="{Binding IsThemeDark}"/>
+                </StackPanel>
+              </Grid>
+            </StackPanel>
+
+            <Border Height="1" Background="{DynamicResource AppBorderBrush}" Margin="0,2"/>
+
+            <!-- 日志 -->
+            <StackPanel Spacing="12">
+              <TextBlock Text="日志" FontWeight="SemiBold" FontSize="13"
+                         Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="3">
+                  <TextBlock Text="显示运行日志" FontSize="12.5"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+                  <TextBlock Text="在主界面底部显示日志面板"
+                             FontSize="11" TextWrapping="Wrap"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                </StackPanel>
+                <ToggleSwitch Grid.Column="1" IsChecked="{Binding ShowLogPanel}"
+                              OnContent="" OffContent="" VerticalAlignment="Center"/>
+              </Grid>
+
+              <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding ShowLogPanel}">
+                <StackPanel Spacing="3">
+                  <TextBlock Text="网络日志" FontSize="12.5"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+                  <TextBlock Text="记录每个 HTTP 请求，排查网络问题用，日志量很大"
+                             FontSize="11" TextWrapping="Wrap"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                </StackPanel>
+                <ToggleSwitch Grid.Column="1" IsChecked="{Binding NetworkLogEnabled}"
+                              OnContent="" OffContent="" VerticalAlignment="Center"/>
+              </Grid>
+            </StackPanel>
+
+            <Border Height="1" Background="{DynamicResource AppBorderBrush}" Margin="0,2"/>
+
+            <!-- 行为 -->
+            <StackPanel Spacing="12">
+              <TextBlock Text="行为" FontWeight="SemiBold" FontSize="13"
+                         Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="3">
+                  <TextBlock Text="启动时刷新版本列表" FontSize="12.5"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+                  <TextBlock Text="打开程序后自动获取最新的可下载版本"
+                             FontSize="11" TextWrapping="Wrap"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                </StackPanel>
+                <ToggleSwitch Grid.Column="1" IsChecked="{Binding AutoRefreshOnStartup}"
+                              OnContent="" OffContent="" VerticalAlignment="Center"/>
+              </Grid>
+
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="3">
+                  <TextBlock Text="安装后打开目录" FontSize="12.5"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+                  <TextBlock Text="任务完成后自动在文件管理器中打开 .minecraft"
+                             FontSize="11" TextWrapping="Wrap"
+                             Foreground="{DynamicResource SecondaryTextBrush}"/>
+                </StackPanel>
+                <ToggleSwitch Grid.Column="1" IsChecked="{Binding OpenFolderAfterInstall}"
+                              OnContent="" OffContent="" VerticalAlignment="Center"/>
+              </Grid>
+            </StackPanel>
+
+            <Border Height="1" Background="{DynamicResource AppBorderBrush}" Margin="0,2"/>
+
+            <!-- 文档 -->
+            <StackPanel Spacing="12">
+              <TextBlock Text="文档" FontWeight="SemiBold" FontSize="13"
+                         Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Button Content="更新日志" Padding="18,7" Click="OnOpenChangelogClick"/>
+                  <Button Content="使用条款" Padding="18,7" Click="OnOpenTermsClick"/>
+                  <Button Content="常见问题" Padding="18,7" Click="OnOpenFaqClick"/>
+                </StackPanel>
+
+                <Button Grid.Column="2" Content="联系作者 [ 郕岚 ]"
+                        Padding="0" Background="Transparent" BorderThickness="0"
+                        Cursor="Hand" FontSize="12"
+                        Click="OnOpenAuthorSiteClick"/>
+              </Grid>
+            </StackPanel>
+
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+    </Border>
+  </Border>
+
+  <!-- ══════════ 确认弹窗（防误触） ══════════ -->
+  <Border Background="#99000000" IsVisible="{Binding ShowConfirmDialog}">
+    <Border Background="{DynamicResource PanelBackgroundBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="1" CornerRadius="8"
+            Padding="24" MaxWidth="520"
+            HorizontalAlignment="Center" VerticalAlignment="Center">
+      <StackPanel Spacing="16">
+        <TextBlock Text="{Binding ConfirmTitle}" FontWeight="Bold" FontSize="16"
+                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+        <TextBlock Text="{Binding ConfirmMessage}" FontSize="12.5" TextWrapping="Wrap"
+                   LineHeight="20"
+                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+          <Button Content="{Binding ConfirmCancelText}" Padding="24,8" Command="{Binding ConfirmNoCommand}"/>
+          <Button Content="{Binding ConfirmAcceptText}" Padding="24,8" Classes="accent"
+                  Command="{Binding ConfirmYesCommand}"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Border>
+
+  <!-- ══════════ 操作结果提示 ══════════ -->
+  <Border Background="#99000000" IsVisible="{Binding ShowResultDialog}">
+    <Border Background="{DynamicResource PanelBackgroundBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="1" CornerRadius="8"
+            Padding="26" Width="480" MaxWidth="560"
+            HorizontalAlignment="Center" VerticalAlignment="Center">
+      <StackPanel Spacing="16">
+        <StackPanel Orientation="Horizontal" Spacing="9">
+          <TextBlock Text="✓" FontSize="17" FontWeight="Bold"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource SuccessBrush}"
+                     IsVisible="{Binding ResultSuccess}"/>
+          <TextBlock Text="✗" FontSize="17" FontWeight="Bold"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource WarningBrush}"
+                     IsVisible="{Binding !ResultSuccess}"/>
+          <TextBlock Text="{Binding ResultTitle}" FontSize="16" FontWeight="Bold"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource PrimaryTextBrush}"/>
+        </StackPanel>
+
+        <TextBlock Text="{Binding ResultMessage}" FontSize="12.5" TextWrapping="Wrap"
+                   LineHeight="20"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+          <!-- 失败时给一个直接复制日志的入口 -->
+          <Button Content="复制日志" Padding="22,8"
+                  Command="{Binding CopyLogCommand}"
+                  IsVisible="{Binding ResultOfferLog}"/>
+          <Button Content="知道了" Padding="28,8"
+                  Classes="accent"
+                  Command="{Binding CloseResultDialogCommand}"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Border>
+  <!-- ══════════ 下载进度覆盖层 ══════════ -->
+  <Border Background="#99000000" IsVisible="{Binding ShowDownloadOverlay}">
+    <Border Background="{DynamicResource PanelBackgroundBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="1" CornerRadius="8"
+            Width="820" Height="640"
+            HorizontalAlignment="Center" VerticalAlignment="Center">
+      <views:ProgressOverlay DataContext="{Binding DownloadProgress}"/>
+    </Border>
+  </Border>
+
+
+  </Panel>
+</Window>

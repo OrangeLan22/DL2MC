@@ -1,0 +1,199 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:McInstaller.App.ViewModels"
+             xmlns:views="using:McInstaller.App.Views"
+             mc:Ignorable="d" d:DesignWidth="760" d:DesignHeight="620"
+             x:Class="McInstaller.App.Views.ProgressOverlay"
+             x:DataType="vm:ProgressWindowViewModel">
+
+
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Margin="24,20">
+
+    <!-- 标题 -->
+    <TextBlock Grid.Row="0" Text="{Binding Title}"
+               FontSize="16" FontWeight="Bold"
+               Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+    <!-- 风险提示 -->
+    <Border Grid.Row="1" Margin="0,12,0,0"
+            Background="{DynamicResource SuccessBackgroundBrush}"
+            CornerRadius="4" Padding="12,8">
+      <TextBlock TextWrapping="Wrap" FontSize="11.5" LineHeight="18"
+                 Foreground="{DynamicResource WarningBrush}">
+        下载过程中可能导致游戏启动器识别版本异常，建议暂时不要操作游戏启动器。
+      </TextBlock>
+    </Border>
+
+    <!-- 总进度 -->
+    <StackPanel Grid.Row="2" Spacing="8" Margin="0,16,0,14">
+
+      <Grid x:Name="OverallBarHost" Height="14">
+        <ProgressBar Value="{Binding OverallPercent}" Maximum="100" Height="14"/>
+
+
+        <!-- 流光：左列宽度 = 百分比，正好盖住已完成部分 -->
+        <Grid IsHitTestVisible="False">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="{Binding OverallPercent,
+                Converter={x:Static views:PercentToStarConverter.Instance}}"/>
+            <ColumnDefinition Width="{Binding OverallPercent,
+                Converter={x:Static views:RemainingPercentToStarConverter.Instance}}"/>
+          </Grid.ColumnDefinitions>
+
+          <Border Grid.Column="0" ClipToBounds="True" Height="14">
+            <Border Classes="shimmer" Width="140" Height="14"
+                    HorizontalAlignment="Left">
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                  <GradientStop Offset="0" Color="#00FFFFFF"/>
+                  <GradientStop Offset="0.5" Color="#66FFFFFF"/>
+                  <GradientStop Offset="1" Color="#00FFFFFF"/>
+                </LinearGradientBrush>
+              </Border.Background>
+              <Border.RenderTransform>
+                <TranslateTransform/>
+              </Border.RenderTransform>
+            </Border>
+          </Border>
+        </Grid>
+      </Grid>
+
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Text="{Binding ProgressText}" FontSize="12"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+        <!-- 右下角：总进度百分比 -->
+        <TextBlock Grid.Column="1" Text="{Binding OverallPercentText}"
+                   FontSize="13" FontWeight="Bold"
+                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+      </Grid>
+
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Text="{Binding CurrentFile}" FontSize="11"
+                   TextTrimming="CharacterEllipsis"
+                   Foreground="{DynamicResource MutedTextBrush}"/>
+
+        <!-- 实时下载速度 -->
+        <TextBlock Grid.Column="1" Text="{Binding SpeedText}" FontSize="11"
+                   FontFamily="Consolas, monospace" Margin="12,0,0,0"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+      </Grid>
+    </StackPanel>
+
+    <!-- 任务列表：每项自带独立进度条 -->
+    <Border Grid.Row="3"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="1" CornerRadius="4"
+            Background="{DynamicResource AppBackgroundBrush}">
+      <Grid RowDefinitions="Auto,*">
+
+        <Border Grid.Row="0" Padding="12,7"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="0,0,0,1">
+          <TextBlock Text="安装项" FontSize="11" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SecondaryTextBrush}"/>
+        </Border>
+
+        <ScrollViewer Grid.Row="1">
+          <ItemsControl ItemsSource="{Binding Tasks}" Margin="12,6,12,8">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ProgressTaskItem">
+                <StackPanel Spacing="5" Margin="0,7">
+
+                  <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                    <TextBlock Text="{Binding Glyph}" FontSize="12" Width="18"
+                               FontFamily="Consolas, monospace"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+                    <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="12.5"
+                               TextTrimming="CharacterEllipsis" Margin="2,0,10,0"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                    <!-- 完成/失败的提示 -->
+                    <TextBlock Grid.Column="2" Text="{Binding Status}" FontSize="11.5"
+                               Margin="0,0,10,0" VerticalAlignment="Center"
+                               Foreground="{DynamicResource SuccessBrush}"
+                               IsVisible="{Binding IsDone}"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Status}" FontSize="11.5"
+                               Margin="0,0,10,0" VerticalAlignment="Center"
+                               Foreground="{DynamicResource WarningBrush}"
+                               IsVisible="{Binding IsFailed}"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Status}" FontSize="11.5"
+                               Margin="0,0,10,0" VerticalAlignment="Center"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
+                               IsVisible="{Binding IsActive}"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Status}" FontSize="11.5"
+                               Margin="0,0,10,0" VerticalAlignment="Center"
+                               Foreground="{DynamicResource MutedTextBrush}"
+                               IsVisible="{Binding IsPending}"/>
+
+                    <TextBlock Grid.Column="3" Text="{Binding Detail}" FontSize="11"
+                               FontFamily="Consolas, monospace"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource MutedTextBrush}"/>
+                  </Grid>
+
+                  <!-- 每个任务独立的进度条 -->
+                  <Grid x:Name="TaskBarHost" Height="8"
+                        IsVisible="{Binding !IsDone}">
+                    <ProgressBar Value="{Binding Percent}" Maximum="100" Height="8"
+                                 IsIndeterminate="{Binding IsIndeterminate}"/>
+
+
+                    <!-- 不确定进度本身已有动效，不再叠流光 -->
+                    <Grid IsHitTestVisible="False"
+                          IsVisible="{Binding !IsIndeterminate}">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="{Binding Percent,
+                            Converter={x:Static views:PercentToStarConverter.Instance}}"/>
+                        <ColumnDefinition Width="{Binding Percent,
+                            Converter={x:Static views:RemainingPercentToStarConverter.Instance}}"/>
+                      </Grid.ColumnDefinitions>
+
+                      <Border Grid.Column="0" ClipToBounds="True" Height="8">
+                        <Border Classes="shimmer" Width="110" Height="8"
+                                HorizontalAlignment="Left">
+                          <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                              <GradientStop Offset="0" Color="#00FFFFFF"/>
+                              <GradientStop Offset="0.5" Color="#66FFFFFF"/>
+                              <GradientStop Offset="1" Color="#00FFFFFF"/>
+                            </LinearGradientBrush>
+                          </Border.Background>
+                          <Border.RenderTransform>
+                            <TranslateTransform/>
+                          </Border.RenderTransform>
+                        </Border>
+                      </Border>
+                    </Grid>
+                  </Grid>
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Grid>
+    </Border>
+
+    <!-- 底部 -->
+    <Grid Grid.Row="4" ColumnDefinitions="*,Auto" Margin="0,14,0,0">
+      <TextBlock Text="{Binding SummaryText}" FontSize="12" TextWrapping="Wrap"
+                 VerticalAlignment="Center"
+                 Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+        <Button Content="最小化" Padding="22,7"
+                Command="{Binding MinimizeCommand}"
+                IsVisible="{Binding !IsFinished}"
+                ToolTip.Tip="收起到右下角状态栏，安装继续进行"/>
+        <Button Content="取消" Padding="22,7"
+                Command="{Binding CancelCommand}"
+                IsVisible="{Binding !IsFinished}"/>
+      </StackPanel>
+    </Grid>
+  </Grid>
+</UserControl>
